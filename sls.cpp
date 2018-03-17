@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
     utils::Generator* gen = new utils::Generator(mSystem);
 
-    std::shared_ptr<utils::MixtureIngredient>& m1 = gen->AddMixtureIngredient(utils::SPHERE, 1);
+    auto m1 = gen->AddMixtureIngredient(utils::SPHERE, 1);
     m1->setDefaultSize(particle_radius);
     m1->setDefaultDensity(particle_density);
     m1->setDistributionSize(particle_radius, particle_std_dev, particle_radius - particle_std_dev,
