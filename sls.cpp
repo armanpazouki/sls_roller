@@ -8,6 +8,7 @@
 #include "chrono/utils/ChUtilsCreators.h"
 #include "chrono/utils/ChUtilsGenerators.h"
 
+//#undef CHRONO_OPENGL
 #ifdef CHRONO_OPENGL
 #include "chrono_opengl/ChOpenGLWindow.h"
 #endif
@@ -61,10 +62,8 @@ std::string data_output_path = "data_sls";
 std::shared_ptr<ChBody> ROLLER;
 real ang = 0;
 
-template <class T>
-void RunTimeStep(T* mSys, const int frame) {
-    ChVector<> roller_pos = ROLLER->GetPos();
-
+inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
+    auto roller_pos = ROLLER->GetPos();
     ROLLER->SetPos(ChVector<>(0, roller_radius + particle_layer_thickness + container_thickness,
                               roller_pos.z() + roller_velocity * timestep));
     ROLLER->SetPos_dt(ChVector<>(0, 0, roller_velocity));
@@ -81,9 +80,8 @@ void RunTimeStep(T* mSys, const int frame) {
 
     ChQuaternion<> roller_quat;
     roller_quat.Q_from_AngAxis(CH_C_PI / 2.0, ChVector<>(0, 0, 1));
-
     ROLLER->SetRot(q1 % roller_quat);
-    ROLLER->SetWvel_loc(Vector(0, roller_omega, 0));
+    ROLLER->SetWvel_loc(ChVector<>(0, roller_omega, 0));
 
     cout << "step " << frame << " " << ROLLER->GetPos().z() << "\n";
 }
@@ -97,61 +95,61 @@ int main(int argc, char* argv[]) {
 
     num_steps = time_end / timestep;
 
-	ChSystemParallelNSC* system = new ChSystemParallelNSC;
-    system->Set_G_acc(ChVector<>(0, gravity, 0));
-    system->SetTimestepperType(ChTimestepper::Type::EULER_IMPLICIT_LINEARIZED);
+	ChSystemParallelNSC* mSystem = new ChSystemParallelNSC;
+    mSystem->Set_G_acc(ChVector<>(0, gravity, 0));
+    mSystem->SetTimestepperType(ChTimestepper::Type::EULER_IMPLICIT_LINEARIZED);
 
-    system->GetSettings()->min_threads = 8;
-    system->GetSettings()->solver.tolerance = tolerance;
-    system->GetSettings()->solver.solver_mode = SolverMode::SPINNING;
-    system->GetSettings()->solver.max_iteration_normal = 30;
-    system->GetSettings()->solver.max_iteration_sliding = max_iteration;
-    system->GetSettings()->solver.max_iteration_spinning = max_iteration;
-    system->GetSettings()->solver.max_iteration_bilateral = 0;  // make 1000, should be about 220
-    system->GetSettings()->solver.compute_N = false;
-    system->GetSettings()->solver.alpha = 0;
-    system->GetSettings()->solver.cache_step_length = true;
-    system->GetSettings()->solver.use_full_inertia_tensor = false;
-    system->GetSettings()->solver.contact_recovery_speed = 180;
-    system->GetSettings()->solver.bilateral_clamp_speed = 1e8;
-    system->GetSettings()->collision.aabb_max = real3(4.50145, 77.3794, 75.8014);
-    system->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -25.0014);
-    system->GetSettings()->collision.use_aabb_active = true;
-    system->ChangeSolverType(SolverType::BB);
-	system->SetLoggingLevel(LoggingLevel::LOG_TRACE, true);
-	system->SetLoggingLevel(LoggingLevel::LOG_INFO, true);
+    mSystem->GetSettings()->min_threads = 8;
+    mSystem->GetSettings()->solver.tolerance = tolerance;
+    mSystem->GetSettings()->solver.solver_mode = SolverMode::SPINNING;
+    mSystem->GetSettings()->solver.max_iteration_normal = 30;
+    mSystem->GetSettings()->solver.max_iteration_sliding = max_iteration;
+    mSystem->GetSettings()->solver.max_iteration_spinning = max_iteration;
+    mSystem->GetSettings()->solver.max_iteration_bilateral = 0;  // make 1000, should be about 220
+    mSystem->GetSettings()->solver.compute_N = false;
+    mSystem->GetSettings()->solver.alpha = 0;
+    mSystem->GetSettings()->solver.cache_step_length = true;
+    mSystem->GetSettings()->solver.use_full_inertia_tensor = false;
+    mSystem->GetSettings()->solver.contact_recovery_speed = 180;
+    mSystem->GetSettings()->solver.bilateral_clamp_speed = 1e8;
+    mSystem->GetSettings()->collision.aabb_max = real3(4.50145, 77.3794, 75.8014);
+    mSystem->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -25.0014);
+    mSystem->GetSettings()->collision.use_aabb_active = true;
+    mSystem->ChangeSolverType(SolverType::BB);
+	mSystem->SetLoggingLevel(LoggingLevel::LOG_TRACE, true);
+	mSystem->SetLoggingLevel(LoggingLevel::LOG_INFO, true);
 
-    system->GetSettings()->collision.collision_envelope = particle_radius * .05;
-    system->GetSettings()->collision.bins_per_axis = vec3(40, 300, 400);
-    system->GetSettings()->collision.narrowphase_algorithm = NarrowPhaseType::NARROWPHASE_HYBRID_MPR;
-    system->GetSettings()->collision.fixed_bins = true;
+    mSystem->GetSettings()->collision.collision_envelope = particle_radius * .05;
+    mSystem->GetSettings()->collision.bins_per_axis = vec3(40, 300, 400);
+    mSystem->GetSettings()->collision.narrowphase_algorithm = NarrowPhaseType::NARROWPHASE_HYBRID_MPR;
+    mSystem->GetSettings()->collision.fixed_bins = true;
 
     auto material_plate = std::make_shared<ChMaterialSurfaceNSC>();
     material_plate->SetFriction(0);
 	auto PLATE = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
     utils::InitializeObject(PLATE, 100000, material_plate, ChVector<>(0, 0, 0), QUNIT, true, true, 2, 6);
 
-    utils::AddBoxGeometry(PLATE.get(), Vector(container_thickness, container_height, container_length),
-                          Vector(-container_width + container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), Vector(container_thickness, container_height, container_length),
-                          Vector(container_width - container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), Vector(container_width, container_height, container_thickness),
-                          Vector(0, container_height, -container_length + container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), Vector(container_width, container_height, container_thickness),
-                          Vector(0, container_height, container_length - container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), Vector(container_width, container_thickness, container_length),
-                          Vector(0, container_height * 2, 0));
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),
+                          ChVector<>(-container_width + container_thickness, container_height, 0));
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),
+                          ChVector<>(container_width - container_thickness, container_height, 0));
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),
+                          ChVector<>(0, container_height, -container_length + container_thickness));
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),
+                          ChVector<>(0, container_height, container_length - container_thickness));
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_thickness, container_length),
+                          ChVector<>(0, container_height * 2, 0));
 
-    utils::FinalizeObject(PLATE, (ChSystemParallel*)system);
+    utils::FinalizeObject(PLATE, (ChSystemParallel*)mSystem);
 
     auto material_bottom = std::make_shared<ChMaterialSurfaceNSC>();
     material_bottom->SetFriction(floor_friction);
 	auto BOTTOM = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
     utils::InitializeObject(BOTTOM, 100000, material_bottom, ChVector<>(0, 0, 0), QUNIT, true, true, 2, 6);
     utils::AddBoxGeometry(BOTTOM.get(), ChVector<>(container_width, container_thickness, container_length));
-    utils::FinalizeObject(BOTTOM, (ChSystemParallel*)system);
+    utils::FinalizeObject(BOTTOM, (ChSystemParallel*)mSystem);
 
-	auto ROLLER = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
+	ROLLER = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
     ChQuaternion<> roller_quat;
     roller_quat.Q_from_AngAxis(CH_C_PI / 2.0, ChVector<>(0, 0, 1));
 
@@ -163,14 +161,14 @@ int main(int argc, char* argv[]) {
                             roller_quat, true, false, 6, 6);
 
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
-    utils::FinalizeObject(ROLLER, (ChSystemParallel*)system);
+    utils::FinalizeObject(ROLLER, (ChSystemParallel*)mSystem);
 
     auto material_granular = std::make_shared<ChMaterialSurfaceNSC>();
     material_granular->SetFriction(particle_friction);
     material_granular->SetRollingFriction(rolling_friction);
     material_granular->SetSpinningFriction(spinning_friction);
 
-    utils::Generator* gen = new utils::Generator(system);
+    utils::Generator* gen = new utils::Generator(mSystem);
 
     std::shared_ptr<utils::MixtureIngredient>& m1 = gen->AddMixtureIngredient(utils::SPHERE, 1);
     m1->setDefaultSize(particle_radius);
@@ -185,7 +183,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
-    gl_window.Initialize(1280, 720, "Bucky", system);
+    gl_window.Initialize(1280, 720, "Bucky", mSystem);
     gl_window.SetCamera(ChVector<>(0, 0, -10), ChVector<>(0, 0, 0), ChVector<>(0, 1, 0), 0.1);
     gl_window.Pause();
     int frame = 0;
@@ -193,8 +191,8 @@ int main(int argc, char* argv[]) {
     while (frame < num_steps) {
         if (gl_window.Active()) {
             if (gl_window.DoStepDynamics(timestep)) {
-                // TimingOutput(system);
-                RunTimeStep(system, frame);
+                // TimingOutput(mSystem);
+                RunTimeStep(mSystem, frame);
                 frame++;
             }
             gl_window.Render();
@@ -208,20 +206,20 @@ int main(int argc, char* argv[]) {
     int sim_frame = 0, out_frame = 0, next_out_frame = 0;
 
     while (time < time_end) {
-        system->DoStepDynamics(timestep);
+        mSystem->DoStepDynamics(timestep);
         if (sim_frame == next_out_frame) {
             std::cout << "write: " << out_frame << std::endl;
-			utils::WriteShapesPovray(system, data_output_path + "data_" + std::to_string(out_frame) + ".dat",
+			utils::WriteShapesPovray(mSystem, data_output_path + "data_" + std::to_string(out_frame) + ".dat",
                                              true);
             out_frame++;
             next_out_frame += out_steps;
         }
-        RunTimeStep(system, sim_frame);
+		RunTimeStep(mSystem, sim_frame);
 
         // Update counters.
         time += timestep;
         sim_frame++;
-        exec_time += system->GetTimerStep();
+        exec_time += mSystem->GetTimerStep();
     }
     cout << "==================================" << endl;
     cout << "Simulation time:   " << exec_time << endl;
