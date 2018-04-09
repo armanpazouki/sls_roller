@@ -59,7 +59,7 @@ int max_iteration = 15;
 int tolerance = 0;
 
 std::string data_output_path = "data_sls";
-std::shared_ptr<ChBody> ROLLER;
+std::shared_ptr<ChBody> ROLLER;;
 real ang = 0;
 
 inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
