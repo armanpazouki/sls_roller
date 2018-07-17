@@ -33,7 +33,7 @@ real roller_overlap = 1;          // amount that roller goes over the container 
 real roller_length = 2.5 - .25;   // length of the roller
 real roller_radius = 76.2 / 2.0;  // radius of roller
 real roller_omega = 0;
-real roller_velocity = -127;
+real roller_velocity = -127; //change from -20 to -1000 with ~6 steps in between
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
@@ -58,8 +58,10 @@ int num_steps = time_end / timestep;
 int max_iteration = 15;
 int tolerance = 0;
 
+int threads = 64;
+
 std::string data_output_path = "data_sls";
-std::shared_ptr<ChBody> ROLLER;;
+std::shared_ptr<ChBody> ROLLER;
 real ang = 0;
 
 inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
@@ -86,7 +88,25 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
     cout << "step " << frame << " " << ROLLER->GetPos().z() << "\n";
 }
 
+// set arguments from input
+// -----------------------------------------------------------------------------
+void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
+	int problemTypeInt = 0; // 0: SETTLING, 1: FLOWING
+	if (argc > 1) {
+		const char* text = argv[1];
+		roller_velocity = atof(text);
+	}
+	if (argc > 2) {
+		const char* text = argv[2];
+		particle_friction = atof(text); // 0: sphere; 1: ellipsoid
+	}
+}
+// -----------------------------------------------------------------------------
+// jsanta35/../> sls -100 .1
 int main(int argc, char* argv[]) {
+	// Get problem parameters from arguments
+	SetArgumentsForSlsFromInput(argc, argv);
+
     real roller_start = container_length + roller_radius / 3.0;
 
     time_end = (roller_start) / Abs(roller_velocity);
@@ -99,7 +119,15 @@ int main(int argc, char* argv[]) {
     mSystem->Set_G_acc(ChVector<>(0, gravity, 0));
     mSystem->SetTimestepperType(ChTimestepper::Type::EULER_IMPLICIT_LINEARIZED);
 
-    mSystem->GetSettings()->min_threads = 8;
+	// **** Set number of threads.
+	int max_threads = omp_get_num_procs();
+	if (threads > max_threads)
+		threads = max_threads;
+	mSystem->SetParallelThreadNumber(threads);
+	omp_set_num_threads(threads);
+	cout << "Using " << threads << " threads" << endl;	// Set number of threads.
+	//
+
     mSystem->GetSettings()->solver.tolerance = tolerance;
     mSystem->GetSettings()->solver.solver_mode = SolverMode::SPINNING;
     mSystem->GetSettings()->solver.max_iteration_normal = 30;
@@ -183,7 +211,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
-    gl_window.Initialize(1280, 720, "Bucky", mSystem);
+	gl_window.Initialize(1280, 720, "Bucky", mSystem);
     gl_window.SetCamera(ChVector<>(0, 0, -10), ChVector<>(0, 0, 0), ChVector<>(0, 1, 0), 0.1);
     gl_window.Pause();
     int frame = 0;
@@ -209,7 +237,7 @@ int main(int argc, char* argv[]) {
         mSystem->DoStepDynamics(timestep);
         if (sim_frame == next_out_frame) {
             std::cout << "write: " << out_frame << std::endl;
-			utils::WriteShapesPovray(mSystem, data_output_path + "data_" + std::to_string(out_frame) + ".dat",
+			utils::WriteShapesPovray(mSystem, data_output_path + "data_" + std::to_string(out_frame) + ".txt",
                                              true);
             out_frame++;
             next_out_frame += out_steps;
