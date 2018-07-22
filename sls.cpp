@@ -33,11 +33,11 @@ real roller_overlap = 1;          // amount that roller goes over the container 
 real roller_length = 2.5 - .25;   // length of the roller
 real roller_radius = 76.2 / 2.0;  // radius of roller
 real roller_omega = 0;
-real roller_velocity = -127; //change from -20 to -1000 with ~6 steps in between
+real roller_velocity = -127;	  //change from -20 to -1000 with ~6 steps in between
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
-real particle_radius = 10 * .058 / 2.0; //.058 / 2.0;
+real particle_radius = 4 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50,000 particles; 1.5* = 500,000 particles
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
@@ -48,10 +48,10 @@ real spinning_friction = .1;
 real gravity = -9810;  // acceleration due to gravity
                        // step size which will not allow interpenetration more than 1/6 of smallest radius
 // real timestep = Abs(((particle_radius - particle_std_dev) / 3.0) / roller_velocity);
-real timestep = .00005;  // step size
+real timestep = .00005;  // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
-int out_fps = 6000;
+int out_fps = 6000;			// original = 6000 (proportional to timestep)
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
@@ -98,7 +98,12 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	}
 	if (argc > 2) {
 		const char* text = argv[2];
-		particle_friction = atof(text); // 0: sphere; 1: ellipsoid
+		particle_friction = atof(text);
+	}
+	if (argc > 3) {
+		const char* text = argv[3];
+		timestep = atof(text);			// original = 0.00005
+		out_fps = 6000 * (0.0005 / timestep);		// orignal = 6000
 	}
 }
 // -----------------------------------------------------------------------------
