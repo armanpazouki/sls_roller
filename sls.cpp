@@ -37,7 +37,7 @@ real roller_velocity = -127;	  //change from -20 to -1000 with ~6 steps in betwe
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
-real particle_radius = 4 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50,000 particles; 1.5* = 500,000 particles
+real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50,000 particles; 1.5* = 500,000 particles
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
@@ -104,6 +104,7 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		const char* text = argv[3];
 		timestep = atof(text);			// original = 0.00005
 		out_fps = 6000 * (0.0005 / timestep);		// orignal = 6000
+		int out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
 }
 // -----------------------------------------------------------------------------
