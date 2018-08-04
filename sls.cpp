@@ -106,6 +106,10 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		out_fps = 6000 * (0.0005 / timestep);		// orignal = 6000
 		int out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
+	if (argc > 4) {
+		const char* text = argv[4];
+		container_length = atof(text);
+	}
 }
 // -----------------------------------------------------------------------------
 // jsanta35/../> sls -100 .1
@@ -163,15 +167,15 @@ int main(int argc, char* argv[]) {
 	auto PLATE = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
     utils::InitializeObject(PLATE, 100000, material_plate, ChVector<>(0, 0, 0), QUNIT, true, true, 2, 6);
 
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// left wall
                           ChVector<>(-container_width + container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// right wall
                           ChVector<>(container_width - container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// front wall
                           ChVector<>(0, container_height, -container_length + container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// bottom wall
                           ChVector<>(0, container_height, container_length - container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_thickness, container_length),
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_thickness, container_length),	// top wall
                           ChVector<>(0, container_height * 2, 0));
 
     utils::FinalizeObject(PLATE, (ChSystemParallel*)mSystem);
