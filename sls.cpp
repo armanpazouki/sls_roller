@@ -21,7 +21,7 @@ using namespace chrono::collision;
 
 // all dimensions are in millimeters, milligrams
 real container_width = 2.5;      // width of area with particles
-real container_length = 25;      // length of area that roller will go over		1194mm maximum
+real container_length = 50;      // length of area that roller will go over		1194mm maximum
 real container_thickness = .25;  // thickness of container walls
 real container_height = 2;       // height of the outer walls
 real container_friction = 0;
@@ -105,10 +105,6 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		timestep = atof(text);			// original = 0.00005
 		out_fps = 6000 * (0.0005 / timestep);		// orignal = 6000
 		int out_steps = std::ceil((1.0 / timestep) / out_fps);
-	}
-	if (argc > 4) {
-		const char* text = argv[4];
-		container_length = atof(text);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -215,9 +211,11 @@ int main(int argc, char* argv[]) {
                             particle_radius + particle_std_dev);
     m1->setDefaultMaterial(material_granular);
 
-    gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness*.5, 0),
+
+	// gen = particle generator; container length 
+    gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness*.5, container_length * 0.5),
                           ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
-                                     container_length - container_thickness * 2.5));
+                                     container_length * 0.5 - container_thickness * 2.5));
 
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
