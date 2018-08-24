@@ -37,7 +37,7 @@ real roller_velocity = -127;	  //change from -20 to -1000 with ~6 steps in betwe
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
-real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50,000 particles; 1.5* = 500,000 particles
+real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 100k
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
@@ -48,10 +48,10 @@ real spinning_friction = .1;
 real gravity = -9810;  // acceleration due to gravity
                        // step size which will not allow interpenetration more than 1/6 of smallest radius
 // real timestep = Abs(((particle_radius - particle_std_dev) / 3.0) / roller_velocity);
-real timestep = .00005;  // step size, original = 0.00005
+real timestep = .0005;  // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
-int out_fps = 6000;			// original = 6000 (proportional to timestep)
+int out_fps = 60000;			// original = 6000 (proportional to timestep)
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     mSystem->GetSettings()->solver.contact_recovery_speed = 180;
     mSystem->GetSettings()->solver.bilateral_clamp_speed = 1e8;
     mSystem->GetSettings()->collision.aabb_max = real3(4.50145, 77.3794, 75.8014);
-    mSystem->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -25.0014);
+    mSystem->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -(container_length + 0.0014));		// invisible boundary limits, 3rd arg is horizontal limit
     mSystem->GetSettings()->collision.use_aabb_active = true;
     mSystem->ChangeSolverType(SolverType::BB);
 	mSystem->SetLoggingLevel(LoggingLevel::LOG_TRACE, true);
