@@ -51,7 +51,7 @@ real gravity = -9810;  // acceleration due to gravity
 real timestep = .0005;  // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
-int out_fps = 60000;			// original = 6000 (proportional to timestep)
+int out_fps = 6000;			// original = 6000 (proportional to timestep)
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
@@ -103,7 +103,6 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	if (argc > 3) {
 		const char* text = argv[3];
 		timestep = atof(text);			// original = 0.00005
-		out_fps = 6000 * (0.0005 / timestep);		// orignal = 6000
 		int out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
 }
