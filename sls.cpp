@@ -23,7 +23,7 @@ using namespace chrono::collision;
 real container_width = 2.5;      // width of area with particles
 real container_length = 50;      // length of area that roller will go over		1194mm maximum
 real container_thickness = .25;  // thickness of container walls
-real container_height = 2;       // height of the outer walls
+real container_height = 5;       // height of the outer walls
 real container_friction = 0;
 real floor_friction = .2;
 real spacer_width = 1;
@@ -33,7 +33,7 @@ real roller_overlap = 1;          // amount that roller goes over the container 
 real roller_length = 2.5 - .25;   // length of the roller
 real roller_radius = 76.2 / 2.0;  // radius of roller
 real roller_omega = 0;
-real roller_velocity = -127;	  //change from -20 to -1000 with ~6 steps in between
+real roller_velocity = -127;	  // change from -20 to -1000 with ~6 steps in between
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
@@ -41,17 +41,19 @@ real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50k particles;
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928; // particle_radius * 32;
+real particle_layer_thickness = 0.928;	// particle_radius * 32;
 real particle_friction = .52;
 real rolling_friction = .1;
 real spinning_friction = .1;
-real gravity = -9810;  // acceleration due to gravity
-                       // step size which will not allow interpenetration more than 1/6 of smallest radius
+real gravity = -9810;					// acceleration due to gravity
+                       
+
+// step size which will not allow interpenetration more than 1/6 of smallest radius
 // real timestep = Abs(((particle_radius - particle_std_dev) / 3.0) / roller_velocity);
-real timestep = .0005;  // step size, original = 0.00005
+real timestep = .0005;   // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
-int out_fps = 6000;			// original = 6000 (proportional to timestep)
+int out_fps = 6000;		 // original = 6000 (proportional to timestep)
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
@@ -88,26 +90,26 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
     cout << "step " << frame << " " << ROLLER->GetPos().z() << "\n";
 }
 
-// set arguments from input
+// Input Arguments
 // -----------------------------------------------------------------------------
 void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	int problemTypeInt = 0; // 0: SETTLING, 1: FLOWING
 	if (argc > 1) {
 		const char* text = argv[1];
-		roller_velocity = atof(text);
+		roller_velocity = atof(text);								// roller velocity
 	}
 	if (argc > 2) {
 		const char* text = argv[2];
-		particle_friction = atof(text);
+		particle_friction = atof(text);								// particle friction
 	}
 	if (argc > 3) {
 		const char* text = argv[3];
-		timestep = atof(text);			// original = 0.00005
+		timestep = atof(text);										// timestep
 		int out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
 }
+
 // -----------------------------------------------------------------------------
-// jsanta35/../> sls -100 .1
 int main(int argc, char* argv[]) {
 	// Get problem parameters from arguments
 	SetArgumentsForSlsFromInput(argc, argv);
@@ -124,21 +126,21 @@ int main(int argc, char* argv[]) {
     mSystem->Set_G_acc(ChVector<>(0, gravity, 0));
     mSystem->SetTimestepperType(ChTimestepper::Type::EULER_IMPLICIT_LINEARIZED);
 
-	// **** Set number of threads.
+	//--------- Set number of threads -----------------------------
 	int max_threads = omp_get_num_procs();
 	if (threads > max_threads)
 		threads = max_threads;
 	mSystem->SetParallelThreadNumber(threads);
 	omp_set_num_threads(threads);
-	cout << "Using " << threads << " threads" << endl;	// Set number of threads.
-	//
+	cout << "Using " << threads << " threads" << endl;
+	// ------------------------------------------------------------
 
     mSystem->GetSettings()->solver.tolerance = tolerance;
     mSystem->GetSettings()->solver.solver_mode = SolverMode::SPINNING;
     mSystem->GetSettings()->solver.max_iteration_normal = 30;
     mSystem->GetSettings()->solver.max_iteration_sliding = max_iteration;
     mSystem->GetSettings()->solver.max_iteration_spinning = max_iteration;
-    mSystem->GetSettings()->solver.max_iteration_bilateral = 0;  // make 1000, should be about 220
+    mSystem->GetSettings()->solver.max_iteration_bilateral = 0;
     mSystem->GetSettings()->solver.compute_N = false;
     mSystem->GetSettings()->solver.alpha = 0;
     mSystem->GetSettings()->solver.cache_step_length = true;
@@ -146,7 +148,7 @@ int main(int argc, char* argv[]) {
     mSystem->GetSettings()->solver.contact_recovery_speed = 180;
     mSystem->GetSettings()->solver.bilateral_clamp_speed = 1e8;
     mSystem->GetSettings()->collision.aabb_max = real3(4.50145, 77.3794, 75.8014);
-    mSystem->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -(container_length + 0.0014));		// invisible boundary limits, 3rd arg is horizontal limit
+	mSystem->GetSettings()->collision.aabb_min = real3(-4.50145, -0.125, -(container_length + 0.0014));		//3rd arg is horizontal particle boundary limit
     mSystem->GetSettings()->collision.use_aabb_active = true;
     mSystem->ChangeSolverType(SolverType::BB);
 	mSystem->SetLoggingLevel(LoggingLevel::LOG_TRACE, true);
@@ -211,7 +213,7 @@ int main(int argc, char* argv[]) {
     m1->setDefaultMaterial(material_granular);
 
 
-	// gen = particle generator; container length 
+	// gen = particle generator based on container length 
     gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness*.5, container_length * 0.5),
                           ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
@@ -219,7 +221,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
 	gl_window.Initialize(1280, 720, "Bucky", mSystem);
-    gl_window.SetCamera(ChVector<>(0, 0, -10), ChVector<>(0, 0, 0), ChVector<>(0, 1, 0), 0.1);
+    gl_window.SetCamera(ChVector<>(26, 4, 30.5), ChVector<>(25, 4, 30.5), ChVector<>(0, 1, 0), 0.1);
     gl_window.Pause();
     int frame = 0;
 
