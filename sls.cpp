@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
     m1->setDefaultMaterial(material_granular);
 
 
-	// gen = particle generator based on container length 
+	// Particle generator based on container length 
     gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness*.5, container_length * 0.5),
                           ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
