@@ -107,6 +107,10 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		timestep = atof(text);										// timestep
 		int out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
+	if (argc > 4) {
+		const char* text = argv[4];
+		max_iteration = atof(text);									// number of iterations
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -194,9 +198,14 @@ int main(int argc, char* argv[]) {
     utils::InitializeObject(ROLLER, 100000, material_roller,
                             ChVector<>(0, roller_radius + particle_layer_thickness + container_thickness, roller_start),
                             roller_quat, true, false, 6, 6);
-
+	ROLLER->GetCollisionModel()->ClearModel();
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
+	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(1, 5, 20));						// Roller rotation indicator
+	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(20, 5, 1));		// z, y, x
+	ROLLER->GetCollisionModel()->BuildModel();
+
     utils::FinalizeObject(ROLLER, (ChSystemParallel*)mSystem);
+
 
     auto material_granular = std::make_shared<ChMaterialSurfaceNSC>();
     material_granular->SetFriction(particle_friction);
