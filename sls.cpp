@@ -57,7 +57,7 @@ int out_fps = 2000;		 // original = 6000 (proportional to timestep)
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
-int max_iteration = 15;
+int max_iteration = 30;
 int tolerance = 0;
 
 int threads = 64;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 
     mSystem->GetSettings()->solver.tolerance = tolerance;
     mSystem->GetSettings()->solver.solver_mode = SolverMode::SPINNING;
-    mSystem->GetSettings()->solver.max_iteration_normal = 30;
+    mSystem->GetSettings()->solver.max_iteration_normal = max_iteration;
     mSystem->GetSettings()->solver.max_iteration_sliding = max_iteration;
     mSystem->GetSettings()->solver.max_iteration_spinning = max_iteration;
     mSystem->GetSettings()->solver.max_iteration_bilateral = 0;
@@ -254,7 +254,7 @@ int main(int argc, char* argv[]) {
     while (time < time_end) {
         mSystem->DoStepDynamics(timestep);
         if (sim_frame == next_out_frame) {
-            std::cout << "write: " << out_frame << std::endl;
+            std::cout << "write: " << out_frame << ", timestep: " << timestep << std::endl;
 			utils::WriteShapesPovray(mSystem, data_output_path + "data_" + std::to_string(out_frame) + ".txt",
                                              true);
             out_frame++;
