@@ -33,7 +33,7 @@ real roller_overlap = 1;          // amount that roller goes over the container 
 real roller_length = 2.5 - .25;   // length of the roller
 real roller_radius = 76.2 / 2.0;  // radius of roller
 real roller_omega = 0;
-real roller_velocity = -127;	  // change from -20 to -1000 with ~6 steps in between
+real roller_velocity = -100;	  // change from -20 to -1000 with ~6 steps in between
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
@@ -42,7 +42,7 @@ real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
 real particle_layer_thickness = 0.928;	// particle_radius * 32;
-real particle_friction = .52;
+real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
 real gravity = -9810;					// acceleration due to gravity
@@ -94,20 +94,20 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
 // -----------------------------------------------------------------------------
 void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	int problemTypeInt = 0; // 0: SETTLING, 1: FLOWING
-	if (argc > 1) {
+/*	if (argc > 1) {
 		const char* text = argv[1];
 		roller_velocity = atof(text);								// roller velocity
 	}
 	if (argc > 2) {
 		const char* text = argv[2];
 		particle_friction = atof(text);								// particle friction
-	}
-	if (argc > 3) {
+	}*/
+	if (argc > 1) {
 		const char* text = argv[3];
 		timestep = atof(text);										// timestep
 		out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
-	if (argc > 4) {
+	if (argc > 2) {
 		const char* text = argv[4];
 		max_iteration = atof(text);									// number of iterations
 	}
