@@ -103,12 +103,12 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		particle_friction = atof(text);								// particle friction
 	}*/
 	if (argc > 1) {
-		const char* text = argv[3];
+		const char* text = argv[1];
 		timestep = atof(text);										// timestep
 		out_steps = std::ceil((1.0 / timestep) / out_fps);
 	}
 	if (argc > 2) {
-		const char* text = argv[4];
+		const char* text = argv[2];
 		max_iteration = atof(text);									// number of iterations
 	}
 }
