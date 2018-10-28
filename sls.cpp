@@ -111,6 +111,10 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		const char* text = argv[2];
 		max_iteration = atof(text);									// number of iterations
 	}
+	if (argc > 3) {
+		const char* text = argv[3];
+		particle_layer_thickness = 0.928 * atof(text);				// particle layer thickness
+	}
 }
 
 // -----------------------------------------------------------------------------
