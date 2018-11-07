@@ -37,11 +37,11 @@ real roller_velocity = -100;	  // change from -20 to -1000 with ~6 steps in betw
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
-real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 100k
+real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 130k
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928;	// particle_radius * 32;
+real particle_layer_thickness = 0.928 * 2;	// particle_radius * 32;
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -172,15 +172,15 @@ int main(int argc, char* argv[]) {
 	auto PLATE = std::make_shared<ChBody>(std::make_shared<ChCollisionModelParallel>());
     utils::InitializeObject(PLATE, 100000, material_plate, ChVector<>(0, 0, 0), QUNIT, true, true, 2, 6);
 
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// left wall
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// back wall
                           ChVector<>(-container_width + container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// right wall
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_thickness, container_height, container_length),	// front wall
                           ChVector<>(container_width - container_thickness, container_height, 0));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// front wall
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// left wall
                           ChVector<>(0, container_height, -container_length + container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// bottom wall
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_height, container_thickness),	// rigth wall
                           ChVector<>(0, container_height, container_length - container_thickness));
-    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_thickness, container_length),	// top wall
+    utils::AddBoxGeometry(PLATE.get(), ChVector<>(container_width, container_thickness, container_length),	// bottom wall
                           ChVector<>(0, container_height * 2, 0));
 
     utils::FinalizeObject(PLATE, (ChSystemParallel*)mSystem);
@@ -227,8 +227,9 @@ int main(int argc, char* argv[]) {
 
 
 	// Particle generator based on container length 
-    gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness*.5, container_length * 0.5),
-                          ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
+    
+	gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.6, container_length * 0.5),
+                      ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
 
 #ifdef CHRONO_OPENGL
