@@ -50,7 +50,7 @@ real gravity = -9810;					// acceleration due to gravity
 
 // step size which will not allow interpenetration more than 1/6 of smallest radius
 // real timestep = Abs(((particle_radius - particle_std_dev) / 3.0) / roller_velocity);
-real timestep = .0005;   // step size, original = 0.00005
+real timestep = .00016;   // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
 int out_fps = 2000;		 // original = 6000 (proportional to timestep)
@@ -94,26 +94,18 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
 // -----------------------------------------------------------------------------
 void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	int problemTypeInt = 0; // 0: SETTLING, 1: FLOWING
-/*	if (argc > 1) {
-		const char* text = argv[1];
-		roller_velocity = atof(text);								// roller velocity
-	}
-	if (argc > 2) {
-		const char* text = argv[2];
-		particle_friction = atof(text);								// particle friction
-	}*/
+
 	if (argc > 1) {
 		const char* text = argv[1];
-		timestep = atof(text);										// timestep
-		out_steps = std::ceil((1.0 / timestep) / out_fps);
+		particle_friction = atof(text);									// particle friction
 	}
 	if (argc > 2) {
-		const char* text = argv[2];
-		max_iteration = atof(text);									// number of iterations
+		const char* text = argv[1];
+		roller_friction = atof(text);									// roller friction
 	}
 	if (argc > 3) {
-		const char* text = argv[3];
-		particle_layer_thickness = 0.928 * atof(text);				// particle layer thickness
+		const char* text = argv[1];
+		roller_velocity = atof(text);									// roller velocity
 	}
 }
 
@@ -228,7 +220,7 @@ int main(int argc, char* argv[]) {
 
 	// Particle generator based on container length 
     
-	gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.6, container_length * 0.5),
+	gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.6, container_length * 0.5),
                       ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
 
