@@ -100,11 +100,11 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		particle_friction = atof(text);									// particle friction
 	}
 	if (argc > 2) {
-		const char* text = argv[1];
+		const char* text = argv[2];
 		roller_friction = atof(text);									// roller friction
 	}
 	if (argc > 3) {
-		const char* text = argv[1];
+		const char* text = argv[3];
 		roller_velocity = atof(text);									// roller velocity
 	}
 }
