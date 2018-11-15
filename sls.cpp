@@ -20,24 +20,24 @@ using namespace chrono;
 using namespace chrono::collision;
 
 // all dimensions are in millimeters, milligrams
-real container_width = 2.5;      // width of area with particles
-real container_length = 50;      // length of area that roller will go over		1194mm maximum
-real container_thickness = .25;  // thickness of container walls
-real container_height = 5;       // height of the outer walls
+real container_width = 2.5;
+real container_length = 50;      // length of area that roller will go over; 1194mm maximum
+real container_thickness = .25;
+real container_height = 5;
 real container_friction = 0;
 real floor_friction = .2;
 real spacer_width = 1;
 real spacer_height = 1;
 
 real roller_overlap = 1;          // amount that roller goes over the container area
-real roller_length = 2.5 - .25;   // length of the roller
-real roller_radius = 76.2 / 2.0;  // radius of roller
+real roller_length = 2.5 - .25;
+real roller_radius = 76.2 / 2.0;
 real roller_omega = 0;
-real roller_velocity = -100;	  // change from -20 to -1000 with ~6 steps in between
+real roller_velocity = -100;
 real roller_mass = 1;
 real roller_friction = .1;
 real roller_cohesion = 0;
-real particle_radius = 2.5 * .058 / 2.0; //.058 / 2.0;	Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 130k
+real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 130k
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
@@ -45,7 +45,7 @@ real particle_layer_thickness = 0.928 * 2;	// particle_radius * 32;
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
-real gravity = -9810;					// acceleration due to gravity
+real gravity = -9810;						// mm/s^2
                        
 
 // step size which will not allow interpenetration more than 1/6 of smallest radius
@@ -53,7 +53,7 @@ real gravity = -9810;					// acceleration due to gravity
 real timestep = .00016;   // step size, original = 0.00005
 real time_end = 1;       // length of simulation
 real current_time = 0;
-int out_fps = 2000;		 // original = 6000 (proportional to timestep)
+int out_fps = 2000;
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
 
 int num_steps = time_end / timestep;
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
 	ROLLER->GetCollisionModel()->ClearModel();
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
 	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(1, 5, 20));						// Roller rotation indicator
-	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(20, 5, 1));		// z, y, x
+	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(20, 5, 1));						// z, y, x
 	ROLLER->GetCollisionModel()->BuildModel();
 
     utils::FinalizeObject(ROLLER, (ChSystemParallel*)mSystem);
@@ -219,10 +219,14 @@ int main(int argc, char* argv[]) {
 
 
 	// Particle generator based on container length 
-    
+    // --------------------------------------------------------------------------------------
+
 	gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.6, container_length * 0.5),
                       ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
+
+	// --------------------------------------------------------------------------------------
+
 
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
