@@ -41,7 +41,7 @@ real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928 * 2;	// particle_radius * 32;
+real particle_layer_thickness = 0.928 * 4.37;	// *2.16113 @ Poisson = 110515 particles; *4.37 @ Poisson = 221011 particles
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
 	// Particle generator based on container length 
     // --------------------------------------------------------------------------------------
 
-	gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.6, container_length * 0.5),
+	gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.9, container_length * 0.5),
                       ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
                                      container_length * 0.5 - container_thickness * 2.5));
 
