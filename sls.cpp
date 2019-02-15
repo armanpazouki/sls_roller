@@ -63,7 +63,6 @@ int tolerance = 0;
 int threads = 64;
 
 int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID (JS addition)
-int PLT_multiplier = 1;		// used for adjusting the coefficient of the PLT to match between types (JS addition)
 
 std::string data_output_path = "data_sls";
 std::shared_ptr<ChBody> ROLLER;
@@ -114,18 +113,13 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		const char* text = argv[4];
 		packing_type = atof(text);										// packing type
 		if (packing_type == 1) {	// HCP
-			particle_layer_thickness = 0.928 * 2;
+			particle_layer_thickness = 0.928 * 1.9947;
 		}
 		if (packing_type == 2) {	// Poisson
-			particle_layer_thickness = 0.928 * 3.27;
+			particle_layer_thickness = 0.928 * 2.3892;
 		}
 		if (packing_type == 3) {	// Grid
-			particle_layer_thickness = 0.928 * 1;
-		}
-		if (argc > 5) {
-			const char* text = argv[5];
-			PLT_multiplier = atof(text);								// Particle Layer Thickness multiplier (overrides arg4)
-			particle_layer_thickness = 0.928 * PLT_multiplier;
+			particle_layer_thickness = 0.928 * 4.9024;
 		}
 	}
 }
