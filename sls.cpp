@@ -41,7 +41,7 @@ real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928;	// *2.16113 @ Poisson = 110515 particles; *4.37 @ Poisson = 221011 particles
+real particle_layer_thickness = 0.928;	// Goal Height: 3.2403 (matched by input parameters per packing type)
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -116,10 +116,10 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 			particle_layer_thickness = 0.928 * 1.9947;
 		}
 		if (packing_type == 2) {	// Poisson
-			particle_layer_thickness = 0.928 * 2.3892;
+			particle_layer_thickness = 0.928 * 4.1223;
 		}
 		if (packing_type == 3) {	// Grid
-			particle_layer_thickness = 0.928 * 4.9024;
+			particle_layer_thickness = 0.928 * 2.3892;
 		}
 	}
 }
