@@ -41,7 +41,7 @@ real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928 * 4.37;	// *2.16113 @ Poisson = 110515 particles; *4.37 @ Poisson = 221011 particles
+real particle_layer_thickness = 0.928;	// *2.16113 @ Poisson = 110515 particles; *4.37 @ Poisson = 221011 particles
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -61,6 +61,9 @@ int max_iteration = 30;
 int tolerance = 0;
 
 int threads = 64;
+
+int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID (JS addition)
+int PLT_multiplier = 1;		// used for adjusting the coefficient of the PLT to match between types (JS addition)
 
 std::string data_output_path = "data_sls";
 std::shared_ptr<ChBody> ROLLER;
@@ -106,6 +109,24 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	if (argc > 3) {
 		const char* text = argv[3];
 		roller_velocity = atof(text);									// roller velocity
+	}
+	if (argc > 4) {
+		const char* text = argv[4];
+		packing_type = atof(text);										// packing type
+		if (packing_type == 1) {	// HCP
+			particle_layer_thickness = 0.928 * 2;
+		}
+		if (packing_type == 2) {	// Poisson
+			particle_layer_thickness = 0.928 * 3.27;
+		}
+		if (packing_type == 3) {	// Grid
+			particle_layer_thickness = 0.928 * 1;
+		}
+		if (argc > 5) {
+			const char* text = argv[5];
+			PLT_multiplier = atof(text);								// Particle Layer Thickness multiplier (overrides arg4)
+			particle_layer_thickness = 0.928 * PLT_multiplier;
+		}
 	}
 }
 
@@ -220,10 +241,24 @@ int main(int argc, char* argv[]) {
 
 	// Particle generator based on container length 
     // --------------------------------------------------------------------------------------
-
-	gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 1.0 + particle_layer_thickness * 0.9, container_length * 0.5),
-                      ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
-                                     container_length * 0.5 - container_thickness * 2.5));
+	if (packing_type == 1)	// HCP
+	{
+		gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
+			ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
+				container_length * 0.5 - container_thickness * 2.5));
+	}
+	if (packing_type == 2)	// Poisson
+	{
+		gen->createObjectsBox(utils::POISSON_DISK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
+			ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
+				container_length * 0.5 - container_thickness * 2.5));
+	}
+	if (packing_type == 3)	// Grid
+	{
+		gen->createObjectsBox(utils::REGULAR_GRID, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
+			ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
+				container_length * 0.5 - container_thickness * 2.5));
+	}
 
 	// --------------------------------------------------------------------------------------
 
@@ -231,7 +266,7 @@ int main(int argc, char* argv[]) {
 #ifdef CHRONO_OPENGL
     opengl::ChOpenGLWindow& gl_window = opengl::ChOpenGLWindow::getInstance();
 	gl_window.Initialize(1280, 720, "Bucky", mSystem);
-    gl_window.SetCamera(ChVector<>(26, 4, 30.5), ChVector<>(25, 4, 30.5), ChVector<>(0, 1, 0), 0.1);
+    gl_window.SetCamera(ChVector<>(14, 0.6, 47.5), ChVector<>(13, 0.6, 47.5), ChVector<>(0, 1, 0), 0.1);
     gl_window.Pause();
     int frame = 0;
 
