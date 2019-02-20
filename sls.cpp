@@ -41,7 +41,7 @@ real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928;	// Goal Height: 3.2403 (matched by input parameters per packing type)
+real particle_layer_thickness = 0.928;		// Goal Height: 3.2403 (matched by input parameters per packing type)
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -63,6 +63,7 @@ int tolerance = 0;
 int threads = 64;
 
 int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID (J.S. addition)
+real mult_layer = 1.0;
 
 std::string data_output_path = "data_sls";
 std::shared_ptr<ChBody> ROLLER;
@@ -122,12 +123,15 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 		packing_type = atof(text);										// packing type
 		if (packing_type == 1) {	// HCP
 			particle_layer_thickness = 0.928 * 1.9947;
+			mult_layer = 1.0;		// 1.9947 / 1.9947
 		}
 		if (packing_type == 2) {	// Poisson
 			particle_layer_thickness = 0.928 * 4.1223;
+			mult_layer = 0.4839;	// 1.9947 / 4.1223
 		}
 		if (packing_type == 3) {	// Grid
 			particle_layer_thickness = 0.928 * 2.3892;
+			mult_layer = 0.8349;	// 1.9947 / 2.3892
 		}
 	}
 }
@@ -215,7 +219,7 @@ int main(int argc, char* argv[]) {
     material_roller->SetFriction(roller_friction);
 
     utils::InitializeObject(ROLLER, 100000, material_roller,
-                            ChVector<>(0, roller_radius + (0.8*particle_layer_thickness) + container_thickness, roller_start),		// 80% PLT
+                            ChVector<>(0, roller_radius + mult_layer * particle_layer_thickness + container_thickness, roller_start),		// 80% PLT
                             roller_quat, true, false, 6, 6);
 	ROLLER->GetCollisionModel()->ClearModel();
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
