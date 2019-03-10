@@ -35,7 +35,7 @@ real roller_radius = 76.2 / 2.0;
 real roller_omega = 0;
 real roller_velocity = -100;
 real roller_mass = 1;
-real roller_friction = .1;
+real roller_friction = 0.6;
 real roller_cohesion = 0;
 real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500k particles, 2.5* = 130k
 real particle_std_dev = .015 / 2.0;
@@ -50,8 +50,8 @@ real particle_density = 0.93;
 ////////////// Comment this area to diagnose //////////////
 
 real particle_layer_thickness = 0.928;		// Goal Height: 3.2403 (modified by input parameters)
-int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID
-real mult_layer = 1.0000;		// HCP
+int packing_type = 1;						// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID
+real mult_layer = 1.0000;					// HCP
 
 /////////////// Uncomment blocks to diagnose //////////////
 
@@ -59,7 +59,7 @@ real mult_layer = 1.0000;		// HCP
 //real mult_layer = 1.0000;									// HCP
 //int packing_type = 1;										// HCP
 
-//real particle_layer_thickness = 0.928 * 4.1223;		// Poisson
+//real particle_layer_thickness = 0.928 * 4.1223;			// Poisson
 //real mult_layer = 0.4839;								// Poisson
 //int packing_type = 2;									// Poisson
 
@@ -69,16 +69,16 @@ real mult_layer = 1.0000;		// HCP
 
 ////////////////////////////////////////////////////////////
 
-real particle_friction = .5;
-real rolling_friction = .1;
+
+real particle_friction = 0.6;
+real rolling_friction = .1;					// Different than roller_friction?
 real spinning_friction = .1;
 real gravity = -9810;						// mm/s^2
                        
 
-// step size which will not allow interpenetration more than 1/6 of smallest radius
-// real timestep = Abs(((particle_radius - particle_std_dev) / 3.0) / roller_velocity);
-real timestep = .00016;   // step size, original = 0.00005
-real time_end = 1;       // length of simulation
+// Step size which will not allow interpenetration more than 1/6 of smallest radius
+real timestep = .00016;						// step size, original = 0.00005
+real time_end = 1;							// length of simulation
 real current_time = 0;
 int out_fps = 2000;
 int out_steps = std::ceil((1.0 / timestep) / out_fps);
@@ -99,7 +99,7 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
 
 	//ROLLER->SetPos(ChVector<>(0, 0.8*(42.17549), roller_pos.z() + roller_velocity * timestep));				// Fixed roller height function (Poisson height standard)
 
-	//ROLLER->SetPos(ChVector<>(0, roller_radius + (0.8*particle_layer_thickness) + container_thickness,			// original variable roller height function with 20% reduction in PLT
+	//ROLLER->SetPos(ChVector<>(0, roller_radius + (0.8*particle_layer_thickness) + container_thickness,		// original variable roller height function with 20% reduction in PLT
 	//	roller_pos.z() + roller_velocity * timestep));
 
 	ROLLER->SetPos(ChVector<>(0, roller_radius + particle_layer_thickness + container_thickness,			    // original variable roller height function
@@ -246,18 +246,6 @@ int main(int argc, char* argv[]) {
                             ChVector<>(0, roller_radius + mult_layer * particle_layer_thickness + container_thickness, roller_start),
                             roller_quat, true, false, 6, 6);
 	
-	// Peek into variable values
-	cout << endl;
-	cout << "Packing Type: " << packing_type << endl;
-	cout << "Roller Radius: " << roller_radius << endl;
-	cout << "mult_layer: " << mult_layer << endl;
-	cout << "Particle Layer Thickness: " << particle_layer_thickness << endl;
-	cout << "Container Thickness: " << container_thickness << endl;
-	cout << "Roller Height: " << ROLLER->GetPos().y() << endl;
-	cout << endl;
-
-
-
 
 	ROLLER->GetCollisionModel()->ClearModel();
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
@@ -287,7 +275,7 @@ int main(int argc, char* argv[]) {
     // --------------------------------------------------------------------------------------
 	if (packing_type == 1)	// HCP
 	{
-		gen->createObjectsBox(utils::HCP_PACK, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
+		gen->createObjectsBox(utils::HCP_PACK,     (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
 			ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
 				container_length * 0.5 - container_thickness * 2.5));
 	}
@@ -299,12 +287,28 @@ int main(int argc, char* argv[]) {
 	}
 	if (packing_type == 3)	// Grid
 	{
-		gen->createObjectsBox(utils::REGULAR_GRID, (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
+		gen->createObjectsBox(utils::REGULAR_GRID,  (particle_radius + particle_std_dev) * 2, ChVector<>(0, 2 * container_thickness + particle_layer_thickness, container_length * 0.5),
 			ChVector<>(container_width - container_thickness * 2.5, particle_layer_thickness,
 				container_length * 0.5 - container_thickness * 2.5));
 	}
 
 	// --------------------------------------------------------------------------------------
+
+
+	/////////////////////// DIAGNOSTICS ////////////////////////////
+
+	// Peek into variable values
+	cout << endl;
+	cout << "Packing Type: " << packing_type << endl;
+	cout << "Roller Radius: " << roller_radius << endl;
+	cout << "Container Thickness: " << container_thickness << endl;
+	cout << "Multiplier: " << mult_layer << endl;
+	cout << "Particle Layer Thickness: " << particle_layer_thickness << endl;
+	//cout << "Particle Layer Height: " <<  << endl;									// How do I display the maximum height of the particle bed?
+	cout << "Roller Boundary: " << (ROLLER->GetPos().y() - roller_radius) << endl;
+	cout << endl;
+
+	////////////////////////////////////////////////////////////////
 
 
 #ifdef CHRONO_OPENGL
