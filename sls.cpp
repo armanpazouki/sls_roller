@@ -41,7 +41,34 @@ real particle_radius = 2.5 * .058 / 2.0;	// Note: 3* = 50k particles; 1.5* = 500
 real particle_std_dev = .015 / 2.0;
 real particle_mass = .05;
 real particle_density = 0.93;
-real particle_layer_thickness = 0.928;		// Goal Height: 3.2403 (matched by input parameters per packing type)
+
+
+
+/////////////////////// DIAGNOSTICS ///////////////////////
+/////////////////////// OpenGL Only ///////////////////////
+
+////////////// Comment this area to diagnose //////////////
+
+real particle_layer_thickness = 0.928;		// Goal Height: 3.2403 (modified by input parameters)
+int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID
+real mult_layer = 1.0000;		// HCP
+
+/////////////// Uncomment blocks to diagnose //////////////
+
+//real particle_layer_thickness = 0.928 * 1.9947;			// HCP
+//real mult_layer = 1.0000;									// HCP
+//int packing_type = 1;										// HCP
+
+//real particle_layer_thickness = 0.928 * 4.1223;		// Poisson
+//real mult_layer = 0.4839;								// Poisson
+//int packing_type = 2;									// Poisson
+
+//real particle_layer_thickness = 0.928 * 2.3892;		// Grid
+//real mult_layer = 0.8349;								// Grid
+//int packing_type = 3;									// Grid
+
+////////////////////////////////////////////////////////////
+
 real particle_friction = .5;
 real rolling_friction = .1;
 real spinning_friction = .1;
@@ -62,9 +89,6 @@ int tolerance = 0;
 
 int threads = 64;
 
-int packing_type = 1;		// 1 = HCP_Pack ; 2 = POISSON_DISK ; 3 = Regular_GRID (J.S. addition)
-real mult_layer = 1.0;
-
 std::string data_output_path = "data_sls";
 std::shared_ptr<ChBody> ROLLER;
 real ang = 0;
@@ -75,11 +99,11 @@ inline void RunTimeStep(ChSystemParallelNSC* mSys, const int frame) {
 
 	//ROLLER->SetPos(ChVector<>(0, 0.8*(42.17549), roller_pos.z() + roller_velocity * timestep));				// Fixed roller height function (Poisson height standard)
 
-	ROLLER->SetPos(ChVector<>(0, roller_radius + (0.8*particle_layer_thickness) + container_thickness,			// original variable roller height function with 20% reduction in PLT
-		roller_pos.z() + roller_velocity * timestep));
-
-	//ROLLER->SetPos(ChVector<>(0, roller_radius + particle_layer_thickness + container_thickness,			    // original variable roller height function
+	//ROLLER->SetPos(ChVector<>(0, roller_radius + (0.8*particle_layer_thickness) + container_thickness,			// original variable roller height function with 20% reduction in PLT
 	//	roller_pos.z() + roller_velocity * timestep));
+
+	ROLLER->SetPos(ChVector<>(0, roller_radius + particle_layer_thickness + container_thickness,			    // original variable roller height function
+		roller_pos.z() + roller_velocity * timestep));
     
 	ROLLER->SetPos_dt(ChVector<>(0, 0, roller_velocity));
     roller_omega = roller_velocity / roller_radius;
@@ -219,8 +243,22 @@ int main(int argc, char* argv[]) {
     material_roller->SetFriction(roller_friction);
 
     utils::InitializeObject(ROLLER, 100000, material_roller,
-                            ChVector<>(0, roller_radius + mult_layer * particle_layer_thickness + container_thickness, roller_start),		// 80% PLT
+                            ChVector<>(0, roller_radius + mult_layer * particle_layer_thickness + container_thickness, roller_start),
                             roller_quat, true, false, 6, 6);
+	
+	// Peek into variable values
+	cout << endl;
+	cout << "Packing Type: " << packing_type << endl;
+	cout << "Roller Radius: " << roller_radius << endl;
+	cout << "mult_layer: " << mult_layer << endl;
+	cout << "Particle Layer Thickness: " << particle_layer_thickness << endl;
+	cout << "Container Thickness: " << container_thickness << endl;
+	cout << "Roller Height: " << ROLLER->GetPos().y() << endl;
+	cout << endl;
+
+
+
+
 	ROLLER->GetCollisionModel()->ClearModel();
     utils::AddCylinderGeometry(ROLLER.get(), roller_radius, roller_length * 2);
 	utils::AddBoxGeometry(ROLLER.get(), ChVector<>(1, 5, 20));						// Roller rotation indicator
