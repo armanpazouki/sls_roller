@@ -60,12 +60,12 @@ real mult_layer = 1.0000;					// HCP
 //int packing_type = 1;										// HCP
 
 //real particle_layer_thickness = 0.928 * 4.1223;			// Poisson
-//real mult_layer = 0.4839;								// Poisson
-//int packing_type = 2;									// Poisson
+//real mult_layer = 0.4839;									// Poisson
+//int packing_type = 2;										// Poisson
 
-//real particle_layer_thickness = 0.928 * 2.3892;		// Grid
-//real mult_layer = 0.8349;								// Grid
-//int packing_type = 3;									// Grid
+//real particle_layer_thickness = 0.928 * 2.3892;			// Grid
+//real mult_layer = 0.8349;									// Grid
+//int packing_type = 3;										// Grid
 
 ////////////////////////////////////////////////////////////
 
