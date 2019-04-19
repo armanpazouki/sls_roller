@@ -140,7 +140,9 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	}
 	if (argc > 3) {
 		const char* text = argv[3];
-		roller_velocity = atof(text);									// roller velocity
+		int roller_velocity_mult = atoi(text);
+		roller_velocity = -50 * roller_velocity_mult;									// roller velocity
+		//roller_velocity = atof(text);									// roller velocity
 	}
 	if (argc > 4) {
 		const char* text = argv[4];
