@@ -8,7 +8,7 @@
 #include "chrono/utils/ChUtilsCreators.h"
 #include "chrono/utils/ChUtilsGenerators.h"
 
-//#undef CHRONO_OPENGL
+#undef CHRONO_OPENGL
 #ifdef CHRONO_OPENGL
 #include "chrono_opengl/ChOpenGLWindow.h"
 #endif
@@ -141,8 +141,7 @@ void SetArgumentsForSlsFromInput(int argc, char* argv[]) {
 	if (argc > 3) {
 		const char* text = argv[3];
 		int roller_velocity_mult = atoi(text);
-		roller_velocity = -50 * roller_velocity_mult;									// roller velocity
-		//roller_velocity = atof(text);									// roller velocity
+		roller_velocity = atof(text);									// roller velocity
 	}
 	if (argc > 4) {
 		const char* text = argv[4];
