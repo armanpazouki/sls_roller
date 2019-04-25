@@ -167,8 +167,10 @@ int main(int argc, char* argv[]) {
 	SetArgumentsForSlsFromInput(argc, argv);
 
     real roller_start = container_length + roller_radius / 3.0;
+	real time_pause = 0.4;
 
     time_end = (roller_start) / Abs(roller_velocity);
+	time_end += time_pause; 
 
     printf("Time to run: %f %f %f\n", roller_start, time_end, timestep);
 
@@ -336,16 +338,19 @@ int main(int argc, char* argv[]) {
     double time = 0, exec_time = 0;
     int sim_frame = 0, out_frame = 0, next_out_frame = 0;
 
-    while (time < time_end) {
-        mSystem->DoStepDynamics(timestep);
-        if (sim_frame == next_out_frame) {
-            std::cout << "write: " << out_frame << ", timestep: " << timestep << std::endl;
+	while (time < time_end) {
+		mSystem->DoStepDynamics(timestep);
+		if (sim_frame == next_out_frame) {
+			std::cout << "write: " << out_frame << ", timestep: " << timestep << std::endl;
 			utils::WriteShapesPovray(mSystem, data_output_path + "data_" + std::to_string(out_frame) + ".txt",
-                                             true);
-            out_frame++;
-            next_out_frame += out_steps;
-        }
-		RunTimeStep(mSystem, sim_frame);
+				true);
+			out_frame++;
+			next_out_frame += out_steps;
+		}
+		if (time > time_pause) {
+			RunTimeStep(mSystem, sim_frame);
+		}
+	
 
         // Update counters.
         time += timestep;
